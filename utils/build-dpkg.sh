@@ -608,6 +608,10 @@ override_dh_install:
 	cp utils/pmdk.magic debian/tmp/usr/share/pmdk/
 	dh_install
 
+override_dh_clean:
+	dh_clean
+	find . -name __pycache__ -exec rm -rf {} +
+
 ${CHECK_CMD}
 EOF
 
@@ -894,7 +898,7 @@ debuild --preserve-envvar=EXTRA_CFLAGS_RELEASE \
 	--preserve-envvar=EXTRA_CXXFLAGS \
 	--preserve-envvar=EXTRA_LDFLAGS \
 	--preserve-envvar=NDCTL_ENABLE \
-	-us -uc -b
+	-us -uc -i
 
 cd $OLD_DIR
 
