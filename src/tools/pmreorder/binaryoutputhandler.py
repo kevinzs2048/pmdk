@@ -115,7 +115,7 @@ class BinaryOutputHandler:
         for bf in self._files:
             if not bf.check_consistency():
                 raise InconsistentFileException(
-                    "File {} inconsistent".format(bf)
+                    "File {} inconsistent".format(bf.file_name)
                 )
 
 
