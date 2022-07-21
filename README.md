@@ -2,13 +2,13 @@
 
 [![Travis build status](https://travis-ci.org/pmem/pmdk.svg?branch=master)](https://travis-ci.org/pmem/pmdk)
 [![GHA build status](https://github.com/pmem/pmdk/workflows/PMDK/badge.svg?branch=master)](https://github.com/pmem/pmdk/actions)
-[![Appveyor build status](https://ci.appveyor.com/api/projects/status/u2l1db7ucl5ktq10/branch/master?svg=true&pr=false)](https://ci.appveyor.com/project/pmem/pmdk/branch/master)
 [![Cirrus build status](https://api.cirrus-ci.com/github/pmem/pmdk.svg)](https://cirrus-ci.com/github/pmem/pmdk/master)
 [![Coverity Scan Build Status](https://img.shields.io/coverity/scan/3015.svg)](https://scan.coverity.com/projects/pmem-pmdk)
 [![Coverage Status](https://codecov.io/github/pmem/pmdk/coverage.svg?branch=master)](https://codecov.io/gh/pmem/pmdk/branch/master)
 [![PMDK release version](https://img.shields.io/github/release/pmem/pmdk.svg?sort=semver)](https://github.com/pmem/pmdk/releases/latest)
 [![Packaging status](https://repology.org/badge/tiny-repos/pmdk.svg)](https://repology.org/project/pmdk/versions)
 [![Language grade: C/C++](https://img.shields.io/lgtm/grade/cpp/g/pmem/pmdk.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/pmem/pmdk/context:cpp)
+[![Security: bandit](https://img.shields.io/badge/security-bandit-yellow.svg?branch=master)](https://github.com/pmem/pmdk/actions/workflows/bandit.yml)
 
 The **Persistent Memory Development Kit (PMDK)** is a collection of libraries and tools for System Administrators and Application Developers to simplify managing and accessing persistent memory devices. For more information, see https://pmem.io.
 
@@ -56,7 +56,10 @@ Libraries available in this repository:
 
 - [libpmemset](https://pmem.io/pmdk/libpmemset/):  (**still in progress**) aims to provide the core functionality any persistent application should have. (EXPERIMENTAL)
 
-- [librpmem](https://pmem.io/pmdk/librpmem/)<sup>1</sup>:  provides low-level support for remote access to persistent memory utilizing RDMA-capable RNICs. (EXPERIMENTAL)
+- [librpmem](https://pmem.io/pmdk/librpmem/)<sup>1</sup>:  provides low-level support for remote access to persistent memory utilizing RDMA-capable RNICs. (DEPRECATED)
+
+**Librpmem** library is deprecated. If you are interested in a remote persistent
+memory support please look at new library [rpma](https://github.com/pmem/rpma).
 
 If you're looking for *libvmem* and *libvmmalloc*, they have been moved to a
 [separate repository](https://github.com/pmem/vmem).
@@ -149,8 +152,8 @@ see https://github.com/pmem/pmdk/issues/4207.
 
 ### Windows
 
-* **MS Visual Studio 2015**
-* [Windows SDK 10.0.17134.12](https://developer.microsoft.com/en-us/windows/downloads/windows-10-sdk)
+* **MS Visual Studio 2022**
+* [Windows SDK 10.0.22000.0](https://developer.microsoft.com/en-us/windows/downloads/windows-sdk/)
 * **Windows, version >= 1803**
 * **perl** (e.g. [StrawberryPerl](http://strawberryperl.com/))
 * **PowerShell 5**
@@ -179,7 +182,7 @@ To build from source, clone this tree:
 
 For a stable version, checkout a [release tag](https://github.com/pmem/pmdk/releases) as follows. Otherwise skip this step to build the latest development release.
 ```
-	$ git checkout tags/1.11.0
+	$ git checkout tags/1.12.0
 ```
 
 Once the build system is setup, the Persistent Memory Development Kit is built using the `make` command at the top level:
@@ -392,7 +395,8 @@ and pass all tests.
 The on-media pool layout is tightly attached to the page size
 of 64KiB used by default on ppc64le, so it is not interchangeable with
 different page sizes, includes those on other architectures. For more
-information on this port, contact Lucas Magalhães (lamm@linux.ibm.com).
+information on this port, contact Tulio Magno Quites Machado Filho
+(tuliom@linux.ibm.com) or Lucas Magalhães (lucmaga@gmail.com).
 
 ## Contact Us
 

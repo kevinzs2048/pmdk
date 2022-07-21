@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: BSD-3-Clause */
-/* Copyright 2021, Intel Corporation */
+/* Copyright 2021-2022, Intel Corporation */
 
 /*
  * future.h - public definitions for the future type, its associated state and
@@ -31,9 +31,6 @@
  * indicates otherwise, futures can be moved in memory and don't always have
  * to be polled by the same thread.
  *
- * TODO: Any future with an inline value that is updated externally,
- * like in DSA or io_uring, is not safe to move in memory.
- *
  * Optionally, future implementations can accept wakers for use in polling.
  * A future can use a waker to signal the caller that some progress can be made
  * and the future should be polled again. This is useful to avoid busy polling
@@ -64,8 +61,22 @@
 #ifndef FUTURE_H
 #define FUTURE_H 1
 
-#include <unistd.h>
+#include <stddef.h>
 #include <stdint.h>
+
+#if defined(__x86_64__) || defined(__amd64__) || defined(_M_X64) || \
+	defined(_M_AMD64)
+#include <emmintrin.h>
+
+#define __FUTURE_WAIT() _mm_pause()
+#else
+#include <sched.h>
+#define __FUTURE_WAIT() sched_yield()
+#endif
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 enum future_state {
 	FUTURE_STATE_IDLE,
@@ -74,9 +85,10 @@ enum future_state {
 };
 
 struct future_context {
-	enum future_state state;
 	size_t data_size;
 	size_t output_size;
+	enum future_state state;
+	uint32_t padding;
 };
 
 typedef void (*future_waker_wake_fn)(void *data);
@@ -86,17 +98,46 @@ struct future_waker {
 	future_waker_wake_fn wake;
 };
 
-void *future_context_get_data(struct future_context *context);
+struct future_poller {
+	uint64_t *ptr_to_monitor;
+};
 
-void *future_context_get_output(struct future_context *context);
+enum future_notifier_type {
+	FUTURE_NOTIFIER_NONE,
+	FUTURE_NOTIFIER_WAKER,
+	FUTURE_NOTIFIER_POLLER,
+};
 
-size_t future_context_get_size(struct future_context *context);
+struct future_notifier {
+	struct future_waker waker;
+	struct future_poller poller;
+	enum future_notifier_type notifier_used;
+	uint32_t padding;
+};
+
+static inline void *
+future_context_get_data(struct future_context *context)
+{
+	return (char *)context + sizeof(struct future_context);
+}
+
+static inline void *
+future_context_get_output(struct future_context *context)
+{
+	return (char *)future_context_get_data(context) + context->data_size;
+}
+
+static inline size_t
+future_context_get_size(struct future_context *context)
+{
+	return context->data_size + context->output_size;
+}
 
 #define FUTURE_WAKER_WAKE(_wakerp)\
 ((_wakerp)->wake((_wakerp)->data))
 
 typedef enum future_state (*future_task_fn)(struct future_context *context,
-			struct future_waker waker);
+			struct future_notifier *notifier);
 
 struct future {
 	future_task_fn task;
@@ -117,46 +158,188 @@ do {\
 	(_futurep)->base.context.data_size = sizeof((_futurep)->data);\
 	(_futurep)->base.context.output_size =\
 		sizeof((_futurep)->output);\
+	(_futurep)->base.context.padding = 0;\
+} while (0)
+
+#define FUTURE_INIT_COMPLETE(_futurep)\
+do {\
+	(_futurep)->base.task = NULL;\
+	(_futurep)->base.context.state = (FUTURE_STATE_COMPLETE);\
+	(_futurep)->base.context.data_size = sizeof((_futurep)->data);\
+	(_futurep)->base.context.output_size =\
+		sizeof((_futurep)->output);\
+	(_futurep)->base.context.padding = 0;\
 } while (0)
 
 #define FUTURE_AS_RUNNABLE(futurep) (&(futurep)->base)
 #define FUTURE_OUTPUT(futurep) (&(futurep)->output)
+#define FUTURE_DATA(futurep) (&(futurep)->data)
+#define FUTURE_STATE(futurep) ((futurep)->base.context.state)
 
 typedef void (*future_map_fn)(struct future_context *lhs,
 			struct future_context *rhs, void *arg);
+typedef void (*future_init_fn)(void *future,
+			struct future_context *chain_fut, void *arg);
 
 struct future_chain_entry {
 	future_map_fn map;
-	void *arg;
+	void *map_arg;
+	future_init_fn init;
+	void *init_arg;
+	uint64_t flags;
 	struct future future;
 };
+
+#define FUTURE_CHAIN_FLAG_ENTRY_LAST		(((uint64_t)1) << 0)
+#define FUTURE_CHAIN_FLAG_ENTRY_PROCESSED	(((uint64_t)1) << 1)
+#define FUTURE_CHAIN_VALID_FLAGS (FUTURE_CHAIN_FLAG_ENTRY_LAST |\
+	FUTURE_CHAIN_FLAG_ENTRY_PROCESSED)
+
+enum future_chain_entry_type {
+	FUTURE_CHAIN_ENTRY_REGULAR = 1,
+	FUTURE_CHAIN_ENTRY_LAST = 2,
+};
+
+typedef uint8_t _future_entry_type_regular[FUTURE_CHAIN_ENTRY_REGULAR];
+typedef uint8_t _future_entry_type_last[FUTURE_CHAIN_ENTRY_LAST];
 
 #define FUTURE_CHAIN_ENTRY(_future_type, _name)\
 struct {\
 	future_map_fn map;\
-	void *arg;\
+	void *map_arg;\
+	future_init_fn init;\
+	void *init_arg;\
+	_future_entry_type_regular *flags;\
 	_future_type fut;\
-} _name;
+} _name
+
+#define FUTURE_CHAIN_ENTRY_LAST(_future_type, _name)\
+struct {\
+	future_map_fn map;\
+	void *map_arg;\
+	future_init_fn init;\
+	void *init_arg;\
+	_future_entry_type_last *flags;\
+	_future_type fut;\
+} _name
 
 #define FUTURE_CHAIN_ENTRY_INIT(_entry, _fut, _map, _map_arg)\
 do {\
 	(_entry)->fut = (_fut);\
-	(_entry)->map = _map;\
-	(_entry)->arg = _map_arg;\
+	(_entry)->map = (_map);\
+	(_entry)->map_arg = (_map_arg);\
+	(_entry)->init = NULL;\
+	(_entry)->init_arg = NULL;\
+	(_entry)->flags = (void *)(sizeof(*(_entry)->flags) ==\
+		FUTURE_CHAIN_ENTRY_LAST ? FUTURE_CHAIN_FLAG_ENTRY_LAST : 0);\
 } while (0)
 
-struct future_waker future_noop_waker(void);
+#define FUTURE_CHAIN_ENTRY_LAZY_INIT(_entry, _init, _init_arg, _map, _map_arg)\
+do {\
+	(_entry)->map = (_map);\
+	(_entry)->map_arg = (_map_arg);\
+	(_entry)->init = (_init);\
+	(_entry)->init_arg = (_init_arg);\
+	(_entry)->flags = (void *)(sizeof(*(_entry)->flags) ==\
+		FUTURE_CHAIN_ENTRY_LAST ? FUTURE_CHAIN_FLAG_ENTRY_LAST : 0);\
+} while (0)
 
-enum future_state future_poll(struct future *fut, struct future_waker waker);
+#define FUTURE_CHAIN_ENTRY_HAS_FLAG(_entry, _flag)\
+(((_entry)->flags & (_flag)) == (_flag))
+
+#define FUTURE_CHAIN_ENTRY_IS_LAST(_entry)\
+FUTURE_CHAIN_ENTRY_HAS_FLAG(_entry, FUTURE_CHAIN_FLAG_ENTRY_LAST)
+
+#define FUTURE_CHAIN_ENTRY_IS_PROCESSED(_entry)\
+FUTURE_CHAIN_ENTRY_HAS_FLAG(_entry, FUTURE_CHAIN_FLAG_ENTRY_PROCESSED)
+
+/*
+ * TODO: Notifiers have to be copied into the state of the future, so we might
+ * consider just passing it by copy here... Needs to be evaluated for
+ * performance.
+ */
+static inline enum future_state
+future_poll(struct future *fut, struct future_notifier *notifier)
+{
+	if (fut->context.state != FUTURE_STATE_COMPLETE) {
+		fut->context.state = fut->task(&fut->context, notifier);
+	}
+
+	return fut->context.state;
+}
 
 #define FUTURE_BUSY_POLL(_futurep)\
-while (future_poll(FUTURE_AS_RUNNABLE((_futurep)), future_noop_waker()) !=\
-	FUTURE_STATE_COMPLETE) {}
+while (future_poll(FUTURE_AS_RUNNABLE((_futurep)), NULL) !=\
+	FUTURE_STATE_COMPLETE) { __FUTURE_WAIT(); }
 
-enum future_state async_chain_impl(struct future_context *ctx,
-	struct future_waker waker);
+static inline enum future_state
+async_chain_impl(struct future_context *ctx, struct future_notifier *notifier)
+{
+#define _MINIASYNC_PTRSIZE sizeof(void *)
+#define _MINIASYNC_ALIGN_UP(size)\
+	(((size) + _MINIASYNC_PTRSIZE - 1) & ~(_MINIASYNC_PTRSIZE - 1))
+
+	uint8_t *data = (uint8_t *)future_context_get_data(ctx);
+
+	struct future_chain_entry *entry = (struct future_chain_entry *)(data);
+	size_t used_data = 0;
+
+	/*
+	 * This will iterate to the first non-complete future in the chain
+	 * and then call poll it once.
+	 * Futures must be laid out sequentially in memory for this to work.
+	 */
+	while (entry != NULL) {
+		if (entry->init) {
+			entry->init(&entry->future, ctx, entry->init_arg);
+			entry->init = NULL;
+		}
+		/*
+		 * `struct future` starts with a pointer, so the structure will
+		 * be pointer-size aligned. We need to account for that when
+		 * calculating where is the next future in a chained struct.
+		 */
+		used_data += _MINIASYNC_ALIGN_UP(
+			sizeof(struct future_chain_entry) +
+			future_context_get_size(&entry->future.context));
+		struct future_chain_entry *next = NULL;
+		if (!FUTURE_CHAIN_ENTRY_IS_LAST(entry) &&
+		    used_data != ctx->data_size) {
+			next = (struct future_chain_entry *)(data + used_data);
+		}
+		if (!FUTURE_CHAIN_ENTRY_IS_PROCESSED(entry)) {
+			if (future_poll(&entry->future, notifier) ==
+			    FUTURE_STATE_COMPLETE) {
+				if (entry->map) {
+					if (next && next->init) {
+						next->init(&next->future, ctx,
+							next->init_arg);
+						next->init = NULL;
+					}
+					entry->map(&entry->future.context,
+							next ?
+							&next->future.context
+							: ctx,
+							entry->map_arg);
+				}
+				entry->flags |=
+					FUTURE_CHAIN_FLAG_ENTRY_PROCESSED;
+			} else {
+				return FUTURE_STATE_RUNNING;
+			}
+		}
+		entry = next;
+	}
+#undef _MINIASYNC_PTRSIZE
+#undef _MINIASYNC_ALIGN_UP
+
+	return FUTURE_STATE_COMPLETE;
+}
 
 #define FUTURE_CHAIN_INIT(_futurep)\
 FUTURE_INIT((_futurep), async_chain_impl)
 
+#ifdef __cplusplus
+}
 #endif
+#endif /* FUTURE_H */

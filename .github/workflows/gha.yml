@@ -29,9 +29,9 @@ jobs:
                  "N=2 OS=ubuntu OS_VER=20.04 FAULT_INJECTION=1 TEST_BUILD=nondebug UBSAN=1",
                  "N=3 OS=ubuntu OS_VER=20.04 PMDK_CC=clang PMDK_CXX=clang++ TEST_BUILD=debug SRC_CHECKERS=1",
                  "N=4 OS=ubuntu OS_VER=20.04 PMDK_CC=clang PMDK_CXX=clang++ TEST_BUILD=nondebug",
-                 "N=5 OS=fedora OS_VER=31    PMDK_CC=clang PMDK_CXX=clang++ TEST_BUILD=debug",
-                 "N=6 OS=fedora OS_VER=31    PMDK_CC=clang PMDK_CXX=clang++ TEST_BUILD=nondebug AUTO_DOC_UPDATE=1",
-                 "N=7 OS=fedora OS_VER=31    MAKE_PKG=1 EXPERIMENTAL=y REMOTE_TESTS=0 VALGRIND=0 PMEMSET_INSTALL=y PUSH_IMAGE=1",
+                 "N=5 OS=fedora OS_VER=35    PMDK_CC=clang PMDK_CXX=clang++ TEST_BUILD=debug",
+                 "N=6 OS=fedora OS_VER=35    PMDK_CC=clang PMDK_CXX=clang++ TEST_BUILD=nondebug AUTO_DOC_UPDATE=1",
+                 "N=7 OS=fedora OS_VER=35    MAKE_PKG=1 EXPERIMENTAL=y REMOTE_TESTS=0 VALGRIND=0 PMEMSET_INSTALL=y PUSH_IMAGE=1",
                  "N=8 OS=ubuntu OS_VER=20.04 MAKE_PKG=1 EXPERIMENTAL=y REMOTE_TESTS=0 VALGRIND=0 NDCTL_ENABLE=n PMEMSET_INSTALL=y PUSH_IMAGE=1",
                  "N=9 OS=ubuntu OS_VER=20.04 MAKE_PKG=1 EXPERIMENTAL=y REMOTE_TESTS=0 VALGRIND=0 NDCTL_ENABLE=n PMDK_CC=clang PMDK_CXX=clang++",
                 "N=10 OS=ubuntu OS_VER=20.04 COVERAGE=1 FAULT_INJECTION=1 TEST_BUILD=debug"]
@@ -52,14 +52,10 @@ jobs:
 
   windows:
     name: Windows
-    runs-on: windows-latest
+    runs-on: windows-2022
     env:
-      platform: x64
       solutionname: PMDK.sln
       ex_solutionname: Examples.sln
-      msbuild: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Enterprise\\MSBuild\\Current\\Bin"
-      # Platform Toolset for Visual Studio 2019
-      platform_toolset: "v142"
       perl: "C:\\Strawberry\\perl\\bin"
     strategy:
       matrix:
@@ -67,11 +63,15 @@ jobs:
     steps:
        - name: Update Path
          run: |
-           echo "${env:msbuild}" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
            echo "${env:perl}" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
        - name: Clone the git repo
          uses: actions/checkout@v2
+
+       - name: Setup MSBuild.exe
+         uses: microsoft/setup-msbuild@v1.1
+         with:
+           msbuild-architecture: x64
 
        - name: Unshallow it
          run: git fetch --prune --unshallow
@@ -105,8 +105,8 @@ jobs:
 
        - name: Build
          run: |
-           msbuild src\$Env:solutionname -property:Configuration=${{ matrix.CONFIG }},PlatformToolset=$Env:platform_toolset -m -v:m
-           msbuild src\examples\$Env:ex_solutionname -property:Configuration=${{ matrix.CONFIG }},PlatformToolset=$Env:platform_toolset -m -v:m
+           msbuild src\$Env:solutionname -property:Configuration=${{ matrix.CONFIG }} -m -v:m
+           msbuild src\examples\$Env:ex_solutionname -property:Configuration=${{ matrix.CONFIG }} -m -v:m
 
        - name: Create ZIP archive
          run: utils/CREATE-ZIP.ps1 -b ${{ matrix.CONFIG }}

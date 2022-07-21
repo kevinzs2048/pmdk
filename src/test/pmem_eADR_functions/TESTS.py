@@ -1,6 +1,6 @@
 #!../env.py
 # SPDX-License-Identifier: BSD-3-Clause
-# Copyright 2021, Intel Corporation
+# Copyright 2021-2022, Intel Corporation
 #
 
 import testframework as t
@@ -9,6 +9,7 @@ import futils
 import re
 
 
+@t.require_architectures('x86_64')
 @g.require_granularity(g.ANY)
 class PMEM_EADR(t.Test):
     test_type = t.Short
@@ -39,7 +40,8 @@ class PMEM_EADR(t.Test):
         match = re.search(regex, log_content)
 
         if match is None:
-            futils.fail(F"Failed to find any occurence of {self.function_name}"
+            futils.fail(F"Failed to find any occurrence of "
+                        F"{self.function_name}"
                         F" with eADR in pmem_{self.testnum}.log")
 
 

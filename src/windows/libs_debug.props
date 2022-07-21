@@ -5,11 +5,12 @@
   <PropertyGroup>
     <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\libs\</OutDir>
     <ExecutablePath>$(FrameworkSDKdir)bin\$(TargetPlatformVersion)\$(Platform);$(ExecutablePath)</ExecutablePath>
+    <IncludePath>$(solutionDir)deps\miniasync\src\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
       <AdditionalIncludeDirectories>$(SolutionDir)\include;$(SolutionDir)\windows\include;$(SolutionDir)\common;$(SolutionDir)\core;$(SolutionDir)\$(TargetName)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>PMDK_UTF8_API;SDS_ENABLED;NTDDI_VERSION=NTDDI_WIN10_RS4;_CRT_SECURE_NO_WARNINGS;_WINDLL;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>PMEM2_USE_MINIASYNC;PMDK_UTF8_API;SDS_ENABLED;NTDDI_VERSION=NTDDI_WIN10_RS4;_CRT_SECURE_NO_WARNINGS;_WINDLL;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <CompileAs>CompileAsC</CompileAs>
       <BrowseInformation>true</BrowseInformation>
       <ForcedIncludeFiles>platform.h</ForcedIncludeFiles>

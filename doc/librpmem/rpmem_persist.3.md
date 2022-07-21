@@ -1,14 +1,15 @@
 ---
-layout: manual
-Content-Style: 'text/css'
-title: _MP(RPMEM_PERSIST, 3)
-collection: librpmem
-header: PMDK
-date: rpmem API version 1.3
-...
+draft: false
+slider_enable: true
+description: ""
+disclaimer: "The contents of this web site and the associated <a href=\"https://github.com/pmem\">GitHub repositories</a> are BSD-licensed open source."
+aliases: ["rpmem_persist.3.html"]
+title: "librpmem | PMDK"
+header: "rpmem API version 1.3"
+---
 
 [comment]: <> (SPDX-License-Identifier: BSD-3-Clause)
-[comment]: <> (Copyright 2017-2018, Intel Corporation)
+[comment]: <> (Copyright 2017-2022, Intel Corporation)
 
 [comment]: <> (rpmem_persist.3 -- man page for rpmem persist, flush, drain and read functions)
 
@@ -21,9 +22,9 @@ date: rpmem API version 1.3
 
 # NAME #
 
-**rpmem_persist**(), **rpmem_deep_persist**(), **rpmem_flush**(),
-**rpmem_drain**(), **rpmem_read**()
-- functions to copy and read remote pools
+**rpmem_persist**()(DEPRECATED), **rpmem_deep_persist**()(DEPRECATED),
+**rpmem_flush**()(DEPRECATED), **rpmem_drain**()(DEPRECATED),
+**rpmem_read**()(DEPRECATED) - functions to copy and read remote pools
 
 # SYNOPSIS #
 

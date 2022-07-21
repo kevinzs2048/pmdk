@@ -1,14 +1,15 @@
 ---
-layout: manual
-Content-Style: 'text/css'
-title: _MP(LIBPMEMSET_SHUTDOWN_STATE, 7)
-collection: libpmemset
-header: PMDK
-date: pmemset API version 1.0
-...
+draft: false
+slider_enable: true
+description: ""
+disclaimer: "The contents of this web site and the associated <a href=\"https://github.com/pmem\">GitHub repositories</a> are BSD-licensed open source."
+aliases: ["libpmemset_shutdown_state.7.html"]
+title: "libpmemset | PMDK"
+header: "pmemset API version 1.0"
+---
 
 [comment]: <> (SPDX-License-Identifier: BSD-3-Clause)
-[comment]: <> (Copyright 2021, Intel Corporation)
+[comment]: <> (Copyright 2021-2022, Intel Corporation)
 
 [comment]: <> (libpmemset_shutdown_state.7 -- man page for libpmemset shutdown state)
 
@@ -147,7 +148,7 @@ save_sds(struct pmemset *set, struct pmemset_event_context *ctx,
 
 This fragment defines a *save_sds* function that checks if the event type matches
 *PMEMSET_EVENT_SDS_UPDATE* and saves the updated SDS wherever user wants. *save_sds*
-is then set in a config as a callback for occuring events.
+is then set in a config as a callback for occurring events.
 
 ```c
 struct pmemset_sds sds = PMEMSET_SDS_INITIALIZE();

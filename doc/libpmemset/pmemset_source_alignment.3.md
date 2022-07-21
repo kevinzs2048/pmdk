@@ -1,14 +1,15 @@
 ---
-layout: manual
-Content-Style: 'text/css'
-title: _MP(PMEMSET_SOURCE_ALIGNMENT, 3)
-collection: libpmemset
-header: PMDK
-date: pmemset API version 1.0
-...
+draft: false
+slider_enable: true
+description: ""
+disclaimer: "The contents of this web site and the associated <a href=\"https://github.com/pmem\">GitHub repositories</a> are BSD-licensed open source."
+aliases: ["pmemset_source_alignment.3.html"]
+title: "libpmemset | PMDK"
+header: "pmemset API version 1.0"
+---
 
 [comment]: <> (SPDX-License-Identifier: BSD-3-Clause)
-[comment]: <> (Copyright 2021, Intel Corporation)
+[comment]: <> (Copyright 2021-2022, Intel Corporation)
 
 [comment]: <> (pmemset_source_alignment.3 -- man page for pmemset_source_alignment)
 
@@ -50,7 +51,7 @@ error code is returned.
 
 The **pmemset_source_alignment**() can fail with the following errors:
 
-* **PMEMSET_E_INVALID_ALIGNMENT_VALUE** - cannot read aligment for source file
+* **PMEMSET_E_INVALID_ALIGNMENT_VALUE** - cannot read alignment for source file
 from the *src*.
 
 # SEE ALSO #

@@ -1,11 +1,12 @@
 ---
-layout: manual
-Content-Style: 'text/css'
-title: _MP(RPMEMD, 1)
-collection: rpmemd
-header: PMDK
-date: rpmemd version 1.4
-...
+draft: false
+slider_enable: true
+description: ""
+disclaimer: "The contents of this web site and the associated <a href=\"https://github.com/pmem\">GitHub repositories</a> are BSD-licensed open source."
+aliases: ["rpmemd.1.html"]
+title: "rpmemd | PMDK"
+header: "rpmemd version 1.4"
+---
 
 [comment]: <> (SPDX-License-Identifier: BSD-3-Clause)
 [comment]: <> (Copyright 2016-2018, Intel Corporation)
@@ -24,7 +25,7 @@ date: rpmemd version 1.4
 
 # NAME #
 
-**rpmemd** - librpmem target node process (EXPERIMENTAL)
+**rpmemd** - librpmem target node process (DEPRECATED)
 
 # SYNOPSIS #
 
@@ -198,6 +199,12 @@ If the pool set is NOT stored in the persistent momory it will use
 **pmem_msync**(3).
 
 See **pmem_persist**(3) and **pmem_msync**(3) for more details.
+
+# NOTE #
+
+The **librpmem**(7) library and **rpmemd** is deprecated since PMDK 1.12 release.
+If you are interested in a remote persistent
+memory support please look at new library **rpma** https://github.com/pmem/rpma.
 
 # SEE ALSO #
 

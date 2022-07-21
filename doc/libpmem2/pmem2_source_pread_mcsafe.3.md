@@ -1,14 +1,15 @@
 ---
-layout: manual
-Content-Style: 'text/css'
-title: _MP(PMEM2_SOURCE_PREAD_MCSAFE, 3)
-collection: libpmem2
-header: PMDK
-date: pmem2 API version 1.0
-...
+draft: false
+slider_enable: true
+description: ""
+disclaimer: "The contents of this web site and the associated <a href=\"https://github.com/pmem\">GitHub repositories</a> are BSD-licensed open source."
+aliases: ["pmem2_source_pread_mcsafe.3.html"]
+title: "libpmem2 | PMDK"
+header: "pmem2 API version 1.0"
+---
 
 [comment]: <> (SPDX-License-Identifier: BSD-3-Clause)
-[comment]: <> (Copyright 2021, Intel Corporation)
+[comment]: <> (Copyright 2021-2022, Intel Corporation)
 
 [comment]: <> (pmem2_source_pread_mcsafe.3 -- man page for libpmem2 machine safe read/write operations)
 
@@ -62,7 +63,7 @@ return 0 on success or a negative error code on failure.
 The **pmem2_source_pread_mcsafe**() and **pmem2_source_pwrite_mcsafe**() can fail
 with the following errors:
 
-* **PMEM2_E_IO_FAIL** - a physical I/O error occured during the read/write operation,
+* **PMEM2_E_IO_FAIL** - a physical I/O error occurred during the read/write operation,
 a possible bad block encountered.
 
 * **PMEM2_E_LENGTH_OUT_OF_RANGE** - read/write operation size *size* from

@@ -13,19 +13,19 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{D9A70E35-0C85-4A09-ACA8-B15B21B66F50}</ProjectGuid>
     <RootNamespace>pmem2_map</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.22000.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
@@ -49,7 +49,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>SSE2_AVAILABLE=0;AVX_AVAILABLE=0;AVX512F_AVAILABLE=0;PMDK_UTF8_API;SDS_ENABLED;NTDDI_VERSION=NTDDI_WIN10_RS1;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>PMEM2_USE_MINIASYNC;SSE2_AVAILABLE=0;AVX_AVAILABLE=0;AVX512F_AVAILABLE=0;PMDK_UTF8_API;SDS_ENABLED;NTDDI_VERSION=NTDDI_WIN10_RS1;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(SolutionDir)\libpmem2;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
@@ -61,7 +61,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>$(SolutionDir)\libpmem2;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>SSE2_AVAILABLE=0;AVX_AVAILABLE=0;AVX512F_AVAILABLE=0;PMDK_UTF8_API;SDS_ENABLED;NTDDI_VERSION=NTDDI_WIN10_RS1;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>PMEM2_USE_MINIASYNC;SSE2_AVAILABLE=0;AVX_AVAILABLE=0;AVX512F_AVAILABLE=0;PMDK_UTF8_API;SDS_ENABLED;NTDDI_VERSION=NTDDI_WIN10_RS1;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -77,6 +77,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\core\membuf.c" />
     <ClCompile Include="..\..\core\ravl.c" />
     <ClCompile Include="..\..\libpmem2\config.c" />
     <ClCompile Include="..\..\libpmem2\deep_flush_windows.c" />
@@ -85,6 +86,7 @@
     <ClCompile Include="..\..\libpmem2\map.c" />
     <ClCompile Include="..\..\libpmem2\map_windows.c" />
     <ClCompile Include="..\..\libpmem2\memops_generic.c" />
+    <ClCompile Include="..\..\libpmem2\mover.c" />
     <ClCompile Include="..\..\libpmem2\persist.c" />
     <ClCompile Include="..\..\libpmem2\persist_windows.c" />
     <ClCompile Include="..\..\libpmem2\pmem2_utils.c" />
@@ -99,6 +101,7 @@
     <ClCompile Include="pmem2_map.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\core\membuf.h" />
     <ClInclude Include="..\..\libpmem2\config.h" />
     <ClInclude Include="..\..\libpmem2\map.h" />
     <ClInclude Include="..\..\libpmem2\pmem2.h" />

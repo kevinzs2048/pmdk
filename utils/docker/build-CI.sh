@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # SPDX-License-Identifier: BSD-3-Clause
-# Copyright 2016-2021, Intel Corporation
+# Copyright 2016-2022, Intel Corporation
 
 #
 # build-CI.sh - runs a Docker container from a Docker image with environment
@@ -50,6 +50,7 @@ containerName=pmdk-${OS}-${OS_VER}
 if [[ $MAKE_PKG -eq 0 ]] ; then command="./run-build.sh"; fi
 if [[ $MAKE_PKG -eq 1 ]] ; then command="./run-build-package.sh"; fi
 if [[ $COVERAGE -eq 1 ]] ; then command="./run-coverage.sh"; ci_env=`bash <(curl -s https://codecov.io/env)`; fi
+if [[ $BANDIT -eq 1 ]] ; then command="./run-bandit.sh"; fi
 
 if [[ ( "$CI_EVENT_TYPE" == "cron" || "$CI_BRANCH" == "coverity_scan" )\
 	&& "$COVERITY" -eq 1 ]]; then
@@ -65,6 +66,7 @@ if [[ $UBSAN -eq 1 ]]; then for x in C CPP LD; do declare EXTRA_${x}FLAGS=-fsani
 # Only run auto doc update on push events on "upstream" repo
 if [[ "${CI_EVENT_TYPE}" != "push" || "${CI_REPO_SLUG}" != "${GITHUB_REPO}" ]]; then
 	AUTO_DOC_UPDATE=0
+	echo "Skipping auto doc update"
 fi
 
 # Check if we are running on a CI (Travis or GitHub Actions)
@@ -137,6 +139,7 @@ docker run --rm --name=$containerName -i $TTY \
 	--env CI_RUN=$CI_RUN \
 	--env SRC_CHECKERS=$SRC_CHECKERS \
 	--env BLACKLIST_FILE=$BLACKLIST_FILE \
+	--env BANDIT=$BANDIT \
 	$ndctl_enable \
 	$pmemset_install \
 	--tmpfs /tmp:rw,relatime,suid,dev,exec,size=6G \
